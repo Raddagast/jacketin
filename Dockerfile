@@ -1,46 +1,41 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.15
+FROM ghcr.io/linuxserver/baseimage-alpine:arm64v8-3.13
 WORKDIR /app
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-ARG SONARR_VERSION
+ARG SICKGEAR_RELEASE
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="thespad"
+LABEL maintainer="xe, homerr"
 
-# set environment variables
-ENV XDG_CONFIG_HOME="/config/xdg"
-ENV SONARR_BRANCH="develop"
+# set python to use utf-8 rather than ascii.
+ENV PYTHONIOENCODING="UTF-8" \
+ENV PORT=8081
 
 RUN \
-  echo "**** install packages ****" && \
-  apk add -U --upgrade --no-cache \
-    curl \
-    jq \
-    libmediainfo \
-    sqlite-libs && \
-  apk add -U --upgrade --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    mono && \
-  echo "**** install sonarr ****" && \
-  mkdir -p /app/sonarr/bin && \
-  if [ -z ${SONARR_VERSION+x} ]; then \
-    SONARR_VERSION=$(curl -sX GET http://services.sonarr.tv/v1/releases \
-    | jq -r ".[] | select(.branch==\"$SONARR_BRANCH\") | .version"); \
-  fi && \
-  curl -o \
-    /tmp/sonarr.tar.gz -L \
-    "https://download.sonarr.tv/v3/${SONARR_BRANCH}/${SONARR_VERSION}/Sonarr.${SONARR_BRANCH}.${SONARR_VERSION}.linux.tar.gz" && \
-  tar xzf \
-    /tmp/sonarr.tar.gz -C \
-    /app/sonarr/bin --strip-components=1 && \
-  echo -e "UpdateMethod=docker\nBranch=${SONARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://linuxserver.io)" > /app/sonarr/package_info && \
-  rm -rf /app/sonarr/bin/Sonarr.Update && \
-  echo "**** cleanup ****" && \
-  rm -rf \
-    /tmp/* \
-    /var/tmp/*
+ echo "**** install packages ****" && \
+ apk add --no-cache \
+	curl \
+	py3-cheetah \
+	py3-lxml \
+	py3-regex \
+	unrar && \
+ echo "**** install app ****" && \
+ mkdir -p \
+	/app/sickgear/ && \
+ if [ -z ${SICKGEAR_RELEASE+x} ]; then \
+	SICKGEAR_RELEASE=$(curl -sX GET "https://api.github.com/repos/sickgear/sickgear/releases/latest" \
+	| awk '/tag_name/{print $4;exit}' FS='[""]'); \
+ fi && \
+ curl -o \
+	/tmp/sickgear.tar.gz -L \
+	"https://github.com/sickgear/sickgear/archive/${SICKGEAR_RELEASE}.tar.gz" && \
+ tar xf \
+	/tmp/sickgear.tar.gz -C \
+	/app/sickgear/ --strip-components=1 && \
+ echo "**** cleanup ****" && \
+ rm -rf \
+	/tmp/* \
+	/root/.cache
 
-# ports and volumes
-EXPOSE 8989
-
-CMD exec /usr/bin/mono --debug /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config
+CMD exec python3 /app/sickgear/SickBeard.py --datadir /app/config -p $PORT
