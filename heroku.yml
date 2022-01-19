@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: exec /usr/bin/mono /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config -p $PORT
+  web: exec mono --debug "/app/sonarr/bin/Sonarr.exe" --nobrowser --data="/app/sonarr/config"
