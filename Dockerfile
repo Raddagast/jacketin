@@ -14,7 +14,7 @@ ARG PACKAGE_VERSION=${VERSION}
 RUN mkdir "/app/sonarr/bin" && \
     curl -fsSL "https://download.sonarr.tv/v3/${SBRANCH}/${VERSION}/Sonarr.${SBRANCH}.${VERSION}.linux.tar.gz" | tar xzf - -C "/app/sonarr/bin" --strip-components=1 && \
     rm -rf "/app/sonarr/bin/Sonarr.Update" && \
-    echo -e "PackageVersion=${PACKAGE_VERSION}\nPackageAuthor=[hotio](https://github.com/hotio)\nUpdateMethod=Docker\nBranch=${SBRANCH}" > "${APP_DIR}/package_info" && \
+    echo -e "PackageVersion=${PACKAGE_VERSION}\nPackageAuthor=[hotio](https://github.com/hotio)\nUpdateMethod=Docker\nBranch=${SBRANCH}" > "/app/sonarr/package_info" && \
     chmod -R u=rwX,go=rX "$/app/sonarr"
 
 ARG ARR_DISCORD_NOTIFIER_VERSION
@@ -23,4 +23,4 @@ RUN curl -fsSL "https://raw.githubusercontent.com/hotio/arr-discord-notifier/${A
 
 COPY root/ /app/sonarr
 
-CMD exec mono --debug "/app/sonarr/bin/Sonarr.exe" --nobrowser --data="/app/sonarr/config"
+CMD exec /usr/bin/mono --debug "/app/sonarr/bin/Sonarr.exe" --nobrowser --data="/app/sonarr/config"
