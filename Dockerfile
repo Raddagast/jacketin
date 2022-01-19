@@ -9,7 +9,7 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 LABEL maintainer="xe, homerr"
 
 # set python to use utf-8 rather than ascii.
-ENV PYTHONIOENCODING="UTF-8" \
+ENV PYTHONIOENCODING="UTF-8"
 ENV PORT=8081
 
 RUN \
