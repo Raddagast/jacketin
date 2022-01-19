@@ -11,7 +11,7 @@ LABEL maintainer="thespad"
 # set environment variables
 ENV XDG_CONFIG_HOME="/config/xdg"
 ENV SONARR_BRANCH="develop"
-ENV PORT=9117
+ENV PORT=443
 
 RUN \
   echo "**** install packages ****" && \
