@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-mono:LTS
+FROM ghcr.io/linuxserver/baseimage-alpine:3.15
 WORKDIR /app
 
 # set version label
@@ -6,19 +6,22 @@ ARG BUILD_DATE
 ARG VERSION
 ARG SONARR_VERSION
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="aptalca"
+LABEL maintainer="thespad"
 
 # set environment variables
-ARG DEBIAN_FRONTEND="noninteractive"
 ENV XDG_CONFIG_HOME="/config/xdg"
-ENV SONARR_BRANCH="main"
+ENV SONARR_BRANCH="develop"
 ENV PORT=8989
 
 RUN \
   echo "**** install packages ****" && \
-  apt-get update && \
-  apt-get install -y \
-    jq && \
+  apk add -U --upgrade --no-cache \
+    curl \
+    jq \
+    libmediainfo \
+    sqlite-libs && \
+  apk add -U --upgrade --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+    mono && \
   echo "**** install sonarr ****" && \
   mkdir -p /app/sonarr/bin && \
   if [ -z ${SONARR_VERSION+x} ]; then \
@@ -28,15 +31,14 @@ RUN \
   curl -o \
     /tmp/sonarr.tar.gz -L \
     "https://download.sonarr.tv/v3/${SONARR_BRANCH}/${SONARR_VERSION}/Sonarr.${SONARR_BRANCH}.${SONARR_VERSION}.linux.tar.gz" && \
-  tar xf \
+  tar xzf \
     /tmp/sonarr.tar.gz -C \
     /app/sonarr/bin --strip-components=1 && \
-  echo "UpdateMethod=docker\nBranch=${SONARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://linuxserver.io)" > /app/sonarr/package_info && \
+  echo -e "UpdateMethod=docker\nBranch=${SONARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://linuxserver.io)" > /app/sonarr/package_info && \
   rm -rf /app/sonarr/bin/Sonarr.Update && \
   echo "**** cleanup ****" && \
-  apt-get clean && \
   rm -rf \
     /tmp/* \
     /var/tmp/*
 
-CMD exec /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config -p $PORT
+CMD exec /usr/bin/mono /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config -p $PORT
