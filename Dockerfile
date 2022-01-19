@@ -39,4 +39,4 @@ RUN \
     /tmp/* \
     /var/tmp/*
 
-CMD exec /usr/bin/mono /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config -p $PORT
+CMD exec /usr/bin/mono /app/sonarr/bin/Sonarr.exe -nobrowser -p $PORT
