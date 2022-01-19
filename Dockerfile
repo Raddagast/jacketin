@@ -12,7 +12,7 @@ LABEL maintainer="aptalca"
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV XDG_CONFIG_HOME="/config/xdg"
 ENV SONARR_BRANCH="main"
-PORT=9118
+ENV PORT=9118
 
 RUN \
   echo "**** install packages ****" && \
