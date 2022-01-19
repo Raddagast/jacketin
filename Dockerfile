@@ -12,7 +12,7 @@ LABEL maintainer="aptalca"
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV XDG_CONFIG_HOME="/config/xdg"
 ENV SONARR_BRANCH="main"
-ENV PORT=9118
+ENV PORT=8989
 
 RUN \
   echo "**** install packages ****" && \
@@ -39,4 +39,4 @@ RUN \
     /tmp/* \
     /var/tmp/*
 
-CMD exec /app/Jackett/jackett --NoRestart --NoUpdates -p $PORT
+CMD exec /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config -p $PORT
