@@ -40,9 +40,6 @@ RUN \
     /tmp/* \
     /var/tmp/*
 
-# add local files
-COPY root/ /
-
 # ports and volumes
 EXPOSE 8989
 
