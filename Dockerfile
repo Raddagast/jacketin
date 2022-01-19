@@ -1,42 +1,26 @@
-FROM ghcr.io/linuxserver/baseimage-mono:LTS
+FROM cr.hotio.dev/hotio/base@sha256:9f4741371043929c19ed6b7468b18aa9e07c66143ffe92bf8c2e2ff78d0193fa
 WORKDIR /app
 
-# set version label
-ARG BUILD_DATE
+EXPOSE 8989
+
+RUN apk add --no-cache sqlite-libs && \
+    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main tinyxml2 && \
+    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community libmediainfo && \
+    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing mono
+
 ARG VERSION
-ARG SONARR_VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="aptalca"
+ARG SBRANCH
+ARG PACKAGE_VERSION=${VERSION}
+RUN mkdir "/app/sonarr/bin" && \
+    curl -fsSL "https://download.sonarr.tv/v3/${SBRANCH}/${VERSION}/Sonarr.${SBRANCH}.${VERSION}.linux.tar.gz" | tar xzf - -C "/app/sonarr/bin" --strip-components=1 && \
+    rm -rf "/app/sonarr/bin/Sonarr.Update" && \
+    echo -e "PackageVersion=${PACKAGE_VERSION}\nPackageAuthor=[hotio](https://github.com/hotio)\nUpdateMethod=Docker\nBranch=${SBRANCH}" > "${APP_DIR}/package_info" && \
+    chmod -R u=rwX,go=rX "$/app/sonarr"
 
-# set environment variables
-ARG DEBIAN_FRONTEND="noninteractive"
-ENV XDG_CONFIG_HOME="/config/xdg"
-ENV SONARR_BRANCH="main"
-ENV PORT=8989
+ARG ARR_DISCORD_NOTIFIER_VERSION
+RUN curl -fsSL "https://raw.githubusercontent.com/hotio/arr-discord-notifier/${ARR_DISCORD_NOTIFIER_VERSION}/arr-discord-notifier.sh" > "${APP_DIR}/arr-discord-notifier.sh" && \
+    chmod u=rwx,go=rx "/app/sonarr/arr-discord-notifier.sh"
 
-RUN \
-  echo "**** install packages ****" && \
-  apt-get update && \
-  apt-get install -y \
-    jq && \
-  echo "**** install sonarr ****" && \
-  mkdir -p /app/sonarr/bin && \
-  if [ -z ${SONARR_VERSION+x} ]; then \
-    SONARR_VERSION=$(curl -sX GET http://services.sonarr.tv/v1/releases \
-    | jq -r ".[] | select(.branch==\"$SONARR_BRANCH\") | .version"); \
-  fi && \
-  curl -o \
-    /tmp/sonarr.tar.gz -L \
-    "https://download.sonarr.tv/v3/${SONARR_BRANCH}/${SONARR_VERSION}/Sonarr.${SONARR_BRANCH}.${SONARR_VERSION}.linux.tar.gz" && \
-  tar xf \
-    /tmp/sonarr.tar.gz -C \
-    /app/sonarr/bin --strip-components=1 && \
-  echo "UpdateMethod=docker\nBranch=${SONARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://linuxserver.io)" > /app/sonarr/package_info && \
-  rm -rf /app/sonarr/bin/Sonarr.Update && \
-  echo "**** cleanup ****" && \
-  apt-get clean && \
-  rm -rf \
-    /tmp/* \
-    /var/tmp/*
+COPY root/ /app/sonarr
 
-CMD exec /usr/bin/mono /app/sonarr/bin/Sonarr.exe -nobrowser -p process.env.PORT:$PORT
+CMD exec mono --debug "/app/sonarr/bin/Sonarr.exe" --nobrowser --data="/app/sonarr/config"
