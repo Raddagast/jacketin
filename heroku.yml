@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: exec python3 /app/sickgear/SickBeard.py --datadir /app/config -p $PORT
+  web: exec /usr/bin/mono --debug /app/sonarr/bin/Sonarr.exe -nobrowser -data=/app/config -p $PORT
