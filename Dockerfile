@@ -41,4 +41,4 @@ RUN \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-CMD exec /app/radarr/bin/Radarr -nobrowser -data=/config -p $PORT
+CMD exec /app/radarr/bin/Radarr -nobrowser -data=/config -p 80:$PORT
