@@ -12,7 +12,6 @@ LABEL maintainer="thelamer"
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG RADARR_BRANCH="master"
 ENV XDG_CONFIG_HOME="/config/xdg"
-ENV PORT=7878
 
 RUN \
   echo "**** install packages ****" && \
