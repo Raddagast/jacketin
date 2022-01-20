@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: exec /app/radarr/bin/Radarr -nobrowser -data=/config -p $PORT
+  web: exec /app/radarr/bin/Radarr -nobrowser -data=/config -p 80:$PORT
