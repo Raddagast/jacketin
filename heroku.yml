@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: exec /usr/bin/mono --debug /app/sonarr/bin/Sonarr.exe -nobrowser -data=/app/config -p 443
+  web: exec /app/radarr/bin/Radarr -nobrowser -data=/config -p $PORT
