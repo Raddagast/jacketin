@@ -1,44 +1,45 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.15
+FROM ghcr.io/linuxserver/baseimage-ubuntu:focal
 WORKDIR /app
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-ARG SONARR_VERSION
+ARG RADARR_RELEASE
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="thespad"
+LABEL maintainer="thelamer"
 
-# set environment variables
+# environment settings
+ARG DEBIAN_FRONTEND="noninteractive"
+ARG RADARR_BRANCH="master"
 ENV XDG_CONFIG_HOME="/config/xdg"
-ENV SONARR_BRANCH="develop"
-ENV PORT=443
+ENV PORT=7878
 
 RUN \
   echo "**** install packages ****" && \
-  apk add -U --upgrade --no-cache \
-    curl \
+  apt-get update && \
+  apt-get install --no-install-recommends -y \
     jq \
-    libmediainfo \
-    sqlite-libs && \
-  apk add -U --upgrade --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    mono && \
-  echo "**** install sonarr ****" && \
-  mkdir -p /app/sonarr/bin && \
-  if [ -z ${SONARR_VERSION+x} ]; then \
-    SONARR_VERSION=$(curl -sX GET http://services.sonarr.tv/v1/releases \
-    | jq -r ".[] | select(.branch==\"$SONARR_BRANCH\") | .version"); \
+    libicu66 \
+    libmediainfo0v5 \
+    sqlite3 && \
+  echo "**** install radarr ****" && \
+  mkdir -p /app/radarr/bin && \
+  if [ -z ${RADARR_RELEASE+x} ]; then \
+    RADARR_RELEASE=$(curl -sL "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/changes?runtime=netcore&os=linux" \
+    | jq -r '.[0].version'); \
   fi && \
   curl -o \
-    /tmp/sonarr.tar.gz -L \
-    "https://download.sonarr.tv/v3/${SONARR_BRANCH}/${SONARR_VERSION}/Sonarr.${SONARR_BRANCH}.${SONARR_VERSION}.linux.tar.gz" && \
-  tar xzf \
-    /tmp/sonarr.tar.gz -C \
-    /app/sonarr/bin --strip-components=1 && \
-  echo -e "UpdateMethod=docker\nBranch=${SONARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://linuxserver.io)" > /app/sonarr/package_info && \
-  rm -rf /app/sonarr/bin/Sonarr.Update && \
+    /tmp/radarr.tar.gz -L \
+    "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/updatefile?version=${RADARR_RELEASE}&os=linux&runtime=netcore&arch=x64" && \
+  tar ixzf \
+    /tmp/radarr.tar.gz -C \
+    /app/radarr/bin --strip-components=1 && \
+  echo "UpdateMethod=docker\nBranch=${RADARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=linuxserver.io" > /app/radarr/package_info && \
   echo "**** cleanup ****" && \
   rm -rf \
+    /app/radarr/bin/Radarr.Update \
     /tmp/* \
+    /var/lib/apt/lists/* \
     /var/tmp/*
 
-CMD exec /usr/bin/mono --debug /app/sonarr/bin/Sonarr.exe -nobrowser -data=/app/config -p $PORT
+CMD exec /app/radarr/bin/Radarr -nobrowser -data=/config -p $PORT
