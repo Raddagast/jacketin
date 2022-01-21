@@ -43,6 +43,4 @@ RUN \
 
 COPY ./config /app/radarr/config
 
-CMD exec \
-	sed -i "/<Port>*/c\  <Port>$PORT</Port>" /app/radarr/config/xdg/Radarr/config.xml \
-	/app/radarr/bin/Radarr -nobrowser -data=/app/radarr/config
+CMD ["bash","start.sh"]
