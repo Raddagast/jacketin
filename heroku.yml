@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: bash start.sh
+  web: bash /app/radarr/start.sh
