@@ -41,4 +41,8 @@ RUN \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-CMD exec /app/radarr/bin/Radarr -nobrowser -data=/config -p $PORT
+COPY ./config /app/radarr/config
+
+CMD exec \
+	sed -i "/<Port>*/c\  <Port>$PORT</Port>" /app/radarr/config/xdg/Radarr/config.xml \
+	/app/radarr/bin/Radarr -nobrowser -data=/app/radarr/config
