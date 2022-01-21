@@ -11,7 +11,7 @@ LABEL maintainer="thelamer"
 # environment settings
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG RADARR_BRANCH="master"
-ENV XDG_CONFIG_HOME="/config/xdg"
+ENV XDG_CONFIG_HOME="/app/radarr/config/xdg"
 
 RUN \
   echo "**** install packages ****" && \
@@ -42,5 +42,8 @@ RUN \
     /var/tmp/*
 
 COPY ./config /app/radarr/config
+COPY ./start.sh /app/radarr/start.sh
 
-CMD ["bash","start.sh"]
+CMD exec \
+	sed -i "/<Port>*/c\  <Port>$PORT</Port>" /app/radarr/config/xdg/Radarr/config.xml \
+	/app/radarr/bin/Radarr -nobrowser -data=/app/radarr/config
