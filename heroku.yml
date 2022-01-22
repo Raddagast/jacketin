@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: exec /app/prowlarr/bin/Prowlarr -nobrowser -data=/config
+  web: bash /app/prowlarr/start.sh
