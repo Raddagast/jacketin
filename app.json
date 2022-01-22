@@ -1,6 +1,6 @@
 {
-  "name": "Sonarr",
-  "description": "Sonarr deployment for Heroku",
-  "repository": "https://github.com/Raddagast/jacketin/tree/sonarr",
+  "name": "Prowlarr",
+  "description": "Prowlarr deployment for Heroku",
+  "repository": "https://github.com/Raddagast/jacketin/tree/prowlarr",
   "stack": "container"
 }
