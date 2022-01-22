@@ -1,6 +1,6 @@
-# Sonarr hosted on Heroku container
+# Prowlarr hosted on Heroku container
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Raddagast/jacketin/tree/sonarr)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Raddagast/jacketin/tree/prowlarr)
 
 ## Instructions
 Clone this repo in your machine, and use those coomands after install de [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
