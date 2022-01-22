@@ -3,7 +3,7 @@
   <BindAddress>*</BindAddress>
   <EnableSsl>False</EnableSsl>
   <SslCertPath></SslCertPath>
-  <Port></Port>
+  <Port>replace</Port>
   <UrlBase></UrlBase>
   <ApiKey>6f68fa368627436581754e2651b1931d</ApiKey>
   <AuthenticationMethod>None</AuthenticationMethod>
