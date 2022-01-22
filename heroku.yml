@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: bash /app/radarr/start.sh
+  web: exec mono /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config
