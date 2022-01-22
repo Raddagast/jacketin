@@ -2,4 +2,5 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: bash /app/radarr/start.sh
+  web: sed -i "/<Port>*/c\  <Port>$PORT</Port>" /config/xdg/Radarr/config.xml
+  web: exec /app/radarr/bin/Radarr -nobrowser -data=/config
