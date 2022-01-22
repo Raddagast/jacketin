@@ -1,7 +1,6 @@
 {
-  "name": "Radarr",
-  "description": "Radarr deployment for Heroku",
-  "repository": "https://github.com/Raddagast/jacketin/tree/radarr",
+  "name": "Sonarr",
+  "description": "Sonarr deployment for Heroku",
+  "repository": "https://github.com/Raddagast/jacketin/tree/sonarr",
   "stack": "container"
 }
-
