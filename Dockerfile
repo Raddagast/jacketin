@@ -1,46 +1,41 @@
 FROM ghcr.io/linuxserver/baseimage-alpine:3.15
-WORKDIR \app
+WORKDIR /app
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-ARG SONARR_VERSION
+ARG PROWLARR_RELEASE
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="thespad"
 
-# set environment variables
+# environment settings
+ARG PROWLARR_BRANCH="develop"
 ENV XDG_CONFIG_HOME="/config/xdg"
-ENV SONARR_BRANCH="develop"
 
 RUN \
   echo "**** install packages ****" && \
   apk add -U --upgrade --no-cache \
     curl \
     jq \
-    libmediainfo \
+    icu-libs \
     sqlite-libs && \
-  apk add -U --upgrade --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    mono && \
-  echo "**** install sonarr ****" && \
-  mkdir -p /app/sonarr/bin && \
-  if [ -z ${SONARR_VERSION+x} ]; then \
-    SONARR_VERSION=$(curl -sX GET http://services.sonarr.tv/v1/releases \
-    | jq -r ".[] | select(.branch==\"$SONARR_BRANCH\") | .version"); \
+  echo "**** install prowlarr ****" && \
+  mkdir -p /app/prowlarr/bin && \
+  if [ -z ${PROWLARR_RELEASE+x} ]; then \
+    PROWLARR_RELEASE=$(curl -sL "https://prowlarr.servarr.com/v1/update/${PROWLARR_BRANCH}/changes?runtime=netcore&os=linuxmusl" \
+    | jq -r '.[0].version'); \
   fi && \
   curl -o \
-    /tmp/sonarr.tar.gz -L \
-    "https://download.sonarr.tv/v3/${SONARR_BRANCH}/${SONARR_VERSION}/Sonarr.${SONARR_BRANCH}.${SONARR_VERSION}.linux.tar.gz" && \
+    /tmp/prowlarr.tar.gz -L \
+    "https://prowlarr.servarr.com/v1/update/${PROWLARR_BRANCH}/updatefile?version=${PROWLARR_RELEASE}&os=linuxmusl&runtime=netcore&arch=x64" && \
   tar xzf \
-    /tmp/sonarr.tar.gz -C \
-    /app/sonarr/bin --strip-components=1 && \
-  echo -e "UpdateMethod=docker\nBranch=${SONARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://linuxserver.io)" > /app/sonarr/package_info && \
-  rm -rf /app/sonarr/bin/Sonarr.Update && \
+    /tmp/prowlarr.tar.gz -C \
+    /app/prowlarr/bin --strip-components=1 && \
+  echo -e "UpdateMethod=docker\nBranch=${PROWLARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://www.linuxserver.io/)" > /app/prowlarr/package_info && \
   echo "**** cleanup ****" && \
   rm -rf \
+    /app/prowlarr/bin/prowlarr.Update \
     /tmp/* \
     /var/tmp/*
 
-COPY ./config /config
-COPY start.sh /app/sonarr
-
-CMD ["bash","/app/sonarr/start.sh"]
+CMD exec /app/prowlarr/bin/Prowlarr -nobrowser -data=/config
