@@ -40,4 +40,7 @@ RUN \
     /tmp/* \
     /var/tmp/*
 
-CMD exec mono /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config
+COPY ./config /config
+COPY start.sh /app/sonarr
+
+CMD ["bash","/app/sonarr/start.sh"]
