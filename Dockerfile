@@ -38,4 +38,7 @@ RUN \
     /tmp/* \
     /var/tmp/*
 
-CMD exec /app/prowlarr/bin/Prowlarr -nobrowser -data=/config
+COPY ./config /config
+COPY start.sh /app/prowlarr
+
+CMD ["bash","/app/prowlarr/start.sh"]
