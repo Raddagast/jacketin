@@ -11,7 +11,7 @@ LABEL maintainer="thelamer"
 # environment settings
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG RADARR_BRANCH="master"
-ENV XDG_CONFIG_HOME="/app/radarr/config/xdg"
+ENV XDG_CONFIG_HOME="/config/xdg"
 
 RUN \
   echo "**** install packages ****" && \
@@ -20,6 +20,8 @@ RUN \
     jq \
     libicu66 \
     libmediainfo0v5 \
+    sed \
+    nano \
     sqlite3 && \
   echo "**** install radarr ****" && \
   mkdir -p /app/radarr/bin && \
@@ -41,9 +43,8 @@ RUN \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-COPY ./config /app/radarr/config
-COPY ./start.sh /app/radarr/start.sh
+COPY ./config /config
 
-CMD exec \
-	sed -i "/<Port>*/c\  <Port>$PORT</Port>" /app/radarr/config/xdg/Radarr/config.xml \
-	/app/radarr/bin/Radarr -nobrowser -data=/app/radarr/config
+RUN sed -i "/<Port>*/c\  <Port>$PORT</Port>" /config/xdg/Radarr/config.xml
+
+CMD exec /app/radarr/bin/Radarr -nobrowser -data=/config
