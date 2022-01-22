@@ -1,5 +1,5 @@
-FROM ghcr.io/linuxserver/baseimage-ubuntu:focal
-WORKDIR /app
+FROM ghcr.io/linuxserver/baseimage-alpine:3.15
+WORKDIR \app
 
 # set version label
 ARG BUILD_DATE
@@ -9,42 +9,36 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 LABEL maintainer="thelamer"
 
 # environment settings
-ARG DEBIAN_FRONTEND="noninteractive"
-ARG RADARR_BRANCH="master"
+ARG RADARR_BRANCH="develop"
 ENV XDG_CONFIG_HOME="/config/xdg"
 
 RUN \
   echo "**** install packages ****" && \
-  apt-get update && \
-  apt-get install --no-install-recommends -y \
+  apk add -U --upgrade --no-cache \
+    curl \
     jq \
-    libicu66 \
-    libmediainfo0v5 \
-    sed \
-    nano \
-    sqlite3 && \
+    icu-libs \
+    sqlite-libs && \
   echo "**** install radarr ****" && \
   mkdir -p /app/radarr/bin && \
   if [ -z ${RADARR_RELEASE+x} ]; then \
-    RADARR_RELEASE=$(curl -sL "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/changes?runtime=netcore&os=linux" \
+    RADARR_RELEASE=$(curl -sL "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/changes?runtime=netcore&os=linuxmusl" \
     | jq -r '.[0].version'); \
   fi && \
   curl -o \
     /tmp/radarr.tar.gz -L \
-    "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/updatefile?version=${RADARR_RELEASE}&os=linux&runtime=netcore&arch=x64" && \
-  tar ixzf \
-    /tmp/radarr.tar.gz -C \
+    "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/updatefile?version=${RADARR_RELEASE}&os=linuxmusl&runtime=netcore&arch=x64" && \
+  tar xzf \
+  /tmp/radarr.tar.gz -C \
     /app/radarr/bin --strip-components=1 && \
-  echo "UpdateMethod=docker\nBranch=${RADARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=linuxserver.io" > /app/radarr/package_info && \
+  echo -e "UpdateMethod=docker\nBranch=${RADARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=linuxserver.io" > /app/radarr/package_info && \
   echo "**** cleanup ****" && \
   rm -rf \
     /app/radarr/bin/Radarr.Update \
     /tmp/* \
-    /var/lib/apt/lists/* \
     /var/tmp/*
 
 COPY ./config /config
+COPY start.sh /app/radarr
 
-RUN sed -i "/<Port>*/c\  <Port>$PORT</Port>" /config/xdg/Radarr/config.xml
-
-CMD exec /app/radarr/bin/Radarr -nobrowser -data=/config
+CMD ["bash","/app/radarr/start.sh"]
