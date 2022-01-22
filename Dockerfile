@@ -4,41 +4,40 @@ WORKDIR \app
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-ARG RADARR_RELEASE
+ARG SONARR_VERSION
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="thelamer"
+LABEL maintainer="thespad"
 
-# environment settings
-ARG RADARR_BRANCH="develop"
+# set environment variables
 ENV XDG_CONFIG_HOME="/config/xdg"
+ENV SONARR_BRANCH="develop"
 
 RUN \
   echo "**** install packages ****" && \
   apk add -U --upgrade --no-cache \
     curl \
     jq \
-    icu-libs \
+    libmediainfo \
     sqlite-libs && \
-  echo "**** install radarr ****" && \
-  mkdir -p /app/radarr/bin && \
-  if [ -z ${RADARR_RELEASE+x} ]; then \
-    RADARR_RELEASE=$(curl -sL "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/changes?runtime=netcore&os=linuxmusl" \
-    | jq -r '.[0].version'); \
+  apk add -U --upgrade --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+    mono && \
+  echo "**** install sonarr ****" && \
+  mkdir -p /app/sonarr/bin && \
+  if [ -z ${SONARR_VERSION+x} ]; then \
+    SONARR_VERSION=$(curl -sX GET http://services.sonarr.tv/v1/releases \
+    | jq -r ".[] | select(.branch==\"$SONARR_BRANCH\") | .version"); \
   fi && \
   curl -o \
-    /tmp/radarr.tar.gz -L \
-    "https://radarr.servarr.com/v1/update/${RADARR_BRANCH}/updatefile?version=${RADARR_RELEASE}&os=linuxmusl&runtime=netcore&arch=x64" && \
+    /tmp/sonarr.tar.gz -L \
+    "https://download.sonarr.tv/v3/${SONARR_BRANCH}/${SONARR_VERSION}/Sonarr.${SONARR_BRANCH}.${SONARR_VERSION}.linux.tar.gz" && \
   tar xzf \
-  /tmp/radarr.tar.gz -C \
-    /app/radarr/bin --strip-components=1 && \
-  echo -e "UpdateMethod=docker\nBranch=${RADARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=linuxserver.io" > /app/radarr/package_info && \
+    /tmp/sonarr.tar.gz -C \
+    /app/sonarr/bin --strip-components=1 && \
+  echo -e "UpdateMethod=docker\nBranch=${SONARR_BRANCH}\nPackageVersion=${VERSION}\nPackageAuthor=[linuxserver.io](https://linuxserver.io)" > /app/sonarr/package_info && \
+  rm -rf /app/sonarr/bin/Sonarr.Update && \
   echo "**** cleanup ****" && \
   rm -rf \
-    /app/radarr/bin/Radarr.Update \
     /tmp/* \
     /var/tmp/*
 
-COPY ./config /config
-COPY start.sh /app/radarr
-
-CMD ["bash","/app/radarr/start.sh"]
+CMD exec mono /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config
