@@ -10,6 +10,6 @@
   <UpdateMechanism>Docker</UpdateMechanism>
   <SslPort>9898</SslPort>
   <LaunchBrowser>True</LaunchBrowser>
-  <Branch>master</Branch>
+  <Branch>develop</Branch>
   <SslCertPassword></SslCertPassword>
 </Config>
