@@ -1,2 +1,2 @@
 sed -i "s/replace/${PORT}/g" /config/config.xml
-/app/radarr/bin/Radarr -nobrowser -data=/config
+mono /app/sonarr/bin/Sonarr.exe -nobrowser -data=/config
